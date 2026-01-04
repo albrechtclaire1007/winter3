@@ -3,12 +3,12 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Genau lesen – Winter</title>
+<title>Winter – Genau lesen</title>
 
 <style>
   @font-face{
-    font-family:"Schoulschrëft";
-    src:url("https://albrechtclaire1007.github.io/Schoulschr%C3%ABft/Schoulschr%C3%ABft.ttf") format("truetype");
+    font-family:"Louisville";
+    src:url("https://github.com/albrechtclaire1007/winter4/raw/refs/heads/main/LouisvilleIi-Regular.otf") format("opentype");
     font-display:swap;
   }
 
@@ -16,8 +16,34 @@
   body{
     background:#eaf2ff url("https://i.postimg.cc/BbCyMf2N/winter-background.png") no-repeat center top;
     background-size:contain;
-    font-family:"Schoulschrëft", sans-serif;
+    font-family:"Louisville", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
     overflow:hidden;
+  }
+
+  /* Top instruction bar */
+  .topBar{
+    position:absolute;
+    top:14px;
+    left:50%;
+    transform:translateX(-50%);
+    width:min(860px, 94vw);
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:10px;
+    z-index:10;
+    pointer-events:auto;
+  }
+  .instr{
+    width:100%;
+    background:rgba(255,255,255,0.88);
+    border-radius:18px;
+    padding:12px 16px;
+    box-shadow:0 10px 18px rgba(0,0,0,0.14);
+    font-size:22px;
+    text-align:center;
+    line-height:1.2;
+    user-select:none;
   }
 
   /* Main layout */
@@ -27,6 +53,8 @@
     display:flex;
     align-items:center;
     justify-content:center;
+    padding-top:78px; /* room for topBar */
+    box-sizing:border-box;
   }
 
   .row{
@@ -62,27 +90,29 @@
   .opt{
     border:0;
     width:100%;
-    background:white;
+    background:rgba(255,255,255,0.90);
     border-radius:18px;
     padding:18px 22px;
-    font-size:46px;
+    font-size:44px;
     line-height:1;
     text-align:left;
     cursor:pointer;
-    box-shadow:0 10px 18px rgba(0,0,0,0.18);
+    box-shadow:0 10px 18px rgba(0,0,0,0.14);
     transition:transform 120ms ease;
+    user-select:none;
   }
   .opt:active{ transform:scale(0.99); }
 
   .opt.good{
     color:#2e7d32;
-    outline:4px solid rgba(46,125,50,0.28);
+    outline:4px solid rgba(46,125,50,0.26);
   }
   .opt.bad{
     color:#b11c1c;
-    outline:4px solid rgba(177,28,28,0.20);
+    outline:4px solid rgba(177,28,28,0.18);
     animation:shake 220ms linear;
   }
+
   @keyframes shake{
     0%{transform:translateX(0)}
     25%{transform:translateX(-6px)}
@@ -91,19 +121,21 @@
     100%{transform:translateX(0)}
   }
 
-  /* Navigation arrows */
-  .nav{
+  /* Bottom center nav: <  x/8  > */
+  .bottomNav{
     position:absolute;
     left:50%;
     transform:translateX(-50%);
-    bottom:18px;
+    bottom:16px;
     display:flex;
     gap:14px;
     align-items:center;
     justify-content:center;
+    z-index:10;
+    pointer-events:auto;
   }
 
-  .arrow{
+  .navBtn{
     width:66px;
     height:66px;
     border-radius:999px;
@@ -113,23 +145,50 @@
     box-shadow:0 12px 22px rgba(0,0,0,0.22);
     display:grid;
     place-items:center;
+    user-select:none;
   }
-  .arrow:active{ transform:translateX(-50%) scale(0.98); } /* keeps centered feel */
-  .arrow svg{ width:30px;height:30px; opacity:0.9; }
-
-  /* disable next until correct */
-  .arrow[disabled]{
+  .navBtn:active{ transform:scale(0.98); }
+  .navBtn[disabled]{
     opacity:0.35;
     cursor:default;
     box-shadow:none;
   }
-  .arrow[disabled] svg{ opacity:0.5; }
+  .navBtn[disabled]:active{ transform:none; }
+  .navBtn svg{ width:30px; height:30px; opacity:0.9; }
 
-  /* keep arrows centered even with :active transform above */
-  .nav .arrow:active{ transform:scale(0.98); }
+  .counterCircle{
+    width:96px;
+    height:66px;
+    border-radius:999px;
+    background:rgba(255,255,255,0.90);
+    box-shadow:0 12px 22px rgba(0,0,0,0.18);
+    display:grid;
+    place-items:center;
+    font-size:22px;
+    user-select:none;
+  }
 
-  @media (max-width: 700px){
-    .row{ flex-direction:column; gap:18px; }
+  /* Completion popup */
+  .popup{
+    position:absolute;
+    inset:0;
+    display:none;
+    align-items:center;
+    justify-content:center;
+    z-index:30;
+    background:rgba(0,0,0,0.10);
+  }
+  .popupBox{
+    background:rgba(255,255,255,0.92);
+    border-radius:22px;
+    padding:18px 22px;
+    box-shadow:0 14px 28px rgba(0,0,0,0.22);
+    font-size:34px;
+    user-select:none;
+  }
+
+  @media (max-width: 760px){
+    .row{flex-direction:column; gap:18px;}
     .pic{ width:min(320px, 80vw); }
     .opts{ width:min(520px, 90vw); }
     .opt{ font-size:40px; }
@@ -138,45 +197,59 @@
 </head>
 
 <body>
+  <div class="topBar">
+    <div class="instr">Lies die Wörter genau. Was ist richtig?</div>
+  </div>
+
   <div class="stage">
     <div class="row">
       <div class="pic"><img id="img" alt=""></div>
       <div class="opts" id="opts"></div>
     </div>
 
-    <div class="nav">
-      <button class="arrow" id="prev" aria-label="Zurück">
+    <div class="bottomNav">
+      <button class="navBtn" id="prev" aria-label="Zurück">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M15 18l-6-6 6-6"/>
         </svg>
       </button>
 
-      <button class="arrow" id="next" aria-label="Weiter" disabled>
+      <div class="counterCircle" id="counter">0/8</div>
+
+      <button class="navBtn" id="next" aria-label="Weiter" disabled>
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M9 6l6 6-6 6"/>
         </svg>
       </button>
     </div>
+
+    <div class="popup" id="popup">
+      <div class="popupBox">Alle richtig gelöst!</div>
+    </div>
   </div>
+
 <script>
-  const WORDS = [
+  // Items (with articles and capital letters)
+  const ITEMS = [
     { key:"kakao", word:"Der Kakao", img:"https://i.postimg.cc/K3GhpZYK/kakao.png" },
     { key:"kamin", word:"Der Kamin", img:"https://i.postimg.cc/CnhprFK8/kamin.png" },
     { key:"berge", word:"Die Berge", img:"https://i.postimg.cc/CBHV4ZwK/berge.png" },
     { key:"tanne", word:"Die Tanne", img:"https://i.postimg.cc/qgwThCmX/tanne.png" },
     { key:"muetze", word:"Die Mütze", img:"https://i.postimg.cc/3WYhxZFf/muetze.png" },
-    { key:"ski",   word:"Die Ski",   img:"https://i.postimg.cc/Cd7gBfvd/ski.png" },
+    { key:"ski", word:"Die Ski", img:"https://i.postimg.cc/Cd7gBfvd/ski.png" },
     { key:"kerze", word:"Die Kerze", img:"https://i.postimg.cc/vxYw2Qmt/kerze.png" },
     { key:"vogel", word:"Der Vogel", img:"https://i.postimg.cc/JtxLDBTq/vogel.png" }
   ];
 
+  // 2 distractors per item (close but wrong)
+  // Special change for "Ski": Die Ski / Die Sci / Die Schi
   const DISTRACTORS = {
     kakao: ["Der Kakau", "Der Kakeo"],
     kamin: ["Der Kamen", "Der Kaminh"],
     berge: ["Die Berga", "Die Bergei"],
     tanne: ["Die Tonne", "Die Tannee"],
     muetze:["Die Mutze", "Die Münze"],
-    ski:   ["Der Ski", "Die Skei"],
+    ski:   ["Die Sci", "Die Schi"],
     kerze: ["Die Kerzen", "Die Kerse"],
     vogel: ["Der Vögel", "Der Vogal"]
   };
@@ -185,9 +258,12 @@
   const optsEl = document.getElementById("opts");
   const btnPrev = document.getElementById("prev");
   const btnNext = document.getElementById("next");
+  const counterEl = document.getElementById("counter");
+  const popup = document.getElementById("popup");
 
   let idx = 0;
-  let solved = false;
+  let solvedCurrent = false;
+  const solvedSet = new Set();
 
   function shuffle(arr){
     const a = arr.slice();
@@ -198,10 +274,14 @@
     return a;
   }
 
+  function updateCounter(){
+    counterEl.textContent = `${solvedSet.size}/8`;
+  }
+
   function render(){
-    const item = WORDS[idx];
-    solved = false;
-    btnNext.disabled = true;
+    const item = ITEMS[idx];
+    solvedCurrent = solvedSet.has(item.key);
+    btnNext.disabled = !solvedCurrent;
 
     imgEl.src = item.img;
 
@@ -215,18 +295,30 @@
       b.textContent = text;
 
       b.onclick = ()=>{
-        if(solved) return;
+        if(solvedSet.has(item.key)) return;
+
         [...optsEl.querySelectorAll(".opt")].forEach(x=>x.classList.remove("good","bad"));
 
         if(text === item.word){
           b.classList.add("good");
-          solved = true;
+          solvedSet.add(item.key);
+          solvedCurrent = true;
           btnNext.disabled = false;
+          updateCounter();
+
+          if(solvedSet.size === ITEMS.length){
+            setTimeout(()=>{ popup.style.display = "flex"; }, 350);
+          }
         }else{
           b.classList.add("bad");
           setTimeout(()=>b.classList.remove("bad"), 260);
         }
       };
+
+      // if already solved, show correct option as green
+      if(solvedSet.has(item.key) && text === item.word){
+        b.classList.add("good");
+      }
 
       optsEl.appendChild(b);
     });
@@ -234,17 +326,23 @@
     btnPrev.disabled = (idx === 0);
   }
 
-  btnPrev.onclick = ()=>{
+  btnPrev.addEventListener("click", ()=>{
     if(idx > 0){ idx--; render(); }
-  };
+  });
 
-  btnNext.onclick = ()=>{
-    if(!solved) return;
-    idx = (idx < WORDS.length - 1) ? idx + 1 : 0;
-    render();
-  };
+  btnNext.addEventListener("click", ()=>{
+    if(!solvedSet.has(ITEMS[idx].key)) return;
+    if(idx < ITEMS.length - 1){
+      idx++;
+      render();
+    }
+  });
 
+  popup.addEventListener("click", ()=>{ popup.style.display = "none"; });
+
+  updateCounter();
   render();
 </script>
 </body>
 </html>
+
