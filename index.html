@@ -1,0 +1,264 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Genau lesen – Winter</title>
+
+<style>
+  @font-face{
+    font-family:"Schoulschrëft";
+    src:url("https://albrechtclaire1007.github.io/Schoulschr%C3%ABft/Schoulschr%C3%ABft.ttf") format("truetype");
+    font-display:swap;
+  }
+
+  html,body{height:100%;margin:0}
+  body{
+    background:#eaf2ff url("https://i.postimg.cc/BbCyMf2N/winter-background.png") no-repeat center top;
+    background-size:contain;
+    font-family:"Schoulschrëft", sans-serif;
+    overflow:hidden;
+  }
+
+  /* Main layout */
+  .stage{
+    position:absolute;
+    inset:0;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  }
+
+  .row{
+    width:min(1100px, 92vw);
+    display:flex;
+    gap:34px;
+    align-items:center;
+    justify-content:center;
+  }
+
+  /* Left: image */
+  .pic{
+    width:min(360px, 36vw);
+    aspect-ratio:1/1;
+    display:grid;
+    place-items:center;
+  }
+  .pic img{
+    width:100%;
+    height:100%;
+    object-fit:contain;
+    filter:drop-shadow(0 12px 18px rgba(0,0,0,0.22));
+  }
+
+  /* Right: options */
+  .opts{
+    width:min(520px, 52vw);
+    display:flex;
+    flex-direction:column;
+    gap:16px;
+  }
+
+  .opt{
+    border:0;
+    width:100%;
+    background:white;
+    border-radius:18px;
+    padding:18px 22px;
+    font-size:46px;
+    line-height:1;
+    text-align:left;
+    cursor:pointer;
+    box-shadow:0 10px 18px rgba(0,0,0,0.18);
+    transition:transform 120ms ease;
+  }
+  .opt:active{ transform:scale(0.99); }
+
+  .opt.good{
+    color:#2e7d32;
+    outline:4px solid rgba(46,125,50,0.28);
+  }
+  .opt.bad{
+    color:#b11c1c;
+    outline:4px solid rgba(177,28,28,0.20);
+    animation:shake 220ms linear;
+  }
+  @keyframes shake{
+    0%{transform:translateX(0)}
+    25%{transform:translateX(-6px)}
+    50%{transform:translateX(6px)}
+    75%{transform:translateX(-4px)}
+    100%{transform:translateX(0)}
+  }
+
+  /* Navigation arrows */
+  .nav{
+    position:absolute;
+    left:50%;
+    transform:translateX(-50%);
+    bottom:18px;
+    display:flex;
+    gap:14px;
+    align-items:center;
+    justify-content:center;
+  }
+
+  .arrow{
+    width:66px;
+    height:66px;
+    border-radius:999px;
+    border:0;
+    cursor:pointer;
+    background:rgba(255,255,255,0.85);
+    box-shadow:0 12px 22px rgba(0,0,0,0.22);
+    display:grid;
+    place-items:center;
+  }
+  .arrow:active{ transform:translateX(-50%) scale(0.98); } /* keeps centered feel */
+  .arrow svg{ width:30px;height:30px; opacity:0.9; }
+
+  /* disable next until correct */
+  .arrow[disabled]{
+    opacity:0.35;
+    cursor:default;
+    box-shadow:none;
+  }
+  .arrow[disabled] svg{ opacity:0.5; }
+
+  /* keep arrows centered even with :active transform above */
+  .nav .arrow:active{ transform:scale(0.98); }
+
+  @media (max-width: 700px){
+    .row{ flex-direction:column; gap:18px; }
+    .pic{ width:min(320px, 80vw); }
+    .opts{ width:min(520px, 90vw); }
+    .opt{ font-size:40px; }
+  }
+</style>
+</head>
+
+<body>
+  <div class="stage">
+    <div class="row">
+      <div class="pic"><img id="img" alt=""></div>
+      <div class="opts" id="opts"></div>
+    </div>
+
+    <div class="nav">
+      <button class="arrow" id="prev" aria-label="Zurück">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M15 18l-6-6 6-6"/>
+        </svg>
+      </button>
+
+      <button class="arrow" id="next" aria-label="Weiter" disabled>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M9 6l6 6-6 6"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+<script>
+  // Bilder aus deiner Liste
+  const WORDS = [
+    { key:"kakao", word:"kakao", img:"https://i.postimg.cc/K3GhpZYK/kakao.png" },
+    { key:"kamin", word:"kamin", img:"https://i.postimg.cc/CnhprFK8/kamin.png" },
+    { key:"berge", word:"berge", img:"https://i.postimg.cc/CBHV4ZwK/berge.png" },
+    { key:"tanne", word:"tanne", img:"https://i.postimg.cc/qgwThCmX/tanne.png" },
+    { key:"muetze", word:"mütze", img:"https://i.postimg.cc/3WYhxZFf/muetze.png" },
+    { key:"ski", word:"ski", img:"https://i.postimg.cc/Cd7gBfvd/ski.png" },
+    { key:"kerze", word:"kerze", img:"https://i.postimg.cc/vxYw2Qmt/kerze.png" },
+    { key:"vogel", word:"vogel", img:"https://i.postimg.cc/JtxLDBTq/vogel.png" }
+  ];
+
+  // 2 Ablenker pro Wort (ähnlich, aber falsch)
+  const DISTRACTORS = {
+    kakao: ["kakau", "kakeo"],
+    kamin: ["kamen", "kaminh"],
+    berge: ["berge", "bergei"],     // sehr nah -> genau hinschauen
+    tanne: ["tonne", "tannee"],
+    muetze: ["mutze", "münze"],
+    ski:   ["sei", "sik"],
+    kerze: ["kerzen", "kerse"],
+    vogel: ["vögel", "vogal"]
+  };
+
+  const imgEl = document.getElementById("img");
+  const optsEl = document.getElementById("opts");
+  const btnPrev = document.getElementById("prev");
+  const btnNext = document.getElementById("next");
+
+  let idx = 0;
+  let solved = false;
+
+  function shuffle(arr){
+    const a = arr.slice();
+    for(let i=a.length-1;i>0;i--){
+      const j = Math.floor(Math.random()*(i+1));
+      [a[i],a[j]] = [a[j],a[i]];
+    }
+    return a;
+  }
+
+  function render(){
+    const item = WORDS[idx];
+    solved = false;
+    btnNext.disabled = true;
+
+    imgEl.src = item.img;
+
+    const options = shuffle([item.word, ...DISTRACTORS[item.key]]);
+    optsEl.innerHTML = "";
+
+    options.forEach(text=>{
+      const b = document.createElement("button");
+      b.className = "opt";
+      b.type = "button";
+      b.textContent = text;
+
+      b.onclick = ()=>{
+        if(solved) return;
+
+        // reset styles
+        [...optsEl.querySelectorAll(".opt")].forEach(x=>x.classList.remove("good","bad"));
+
+        if(text === item.word){
+          b.classList.add("good");
+          solved = true;
+          btnNext.disabled = false;
+        }else{
+          b.classList.add("bad");
+          setTimeout(()=>b.classList.remove("bad"), 260);
+        }
+      };
+
+      optsEl.appendChild(b);
+    });
+
+    btnPrev.disabled = (idx === 0);
+  }
+
+  btnPrev.addEventListener("click", ()=>{
+    if(idx > 0){
+      idx--;
+      render();
+    }
+  });
+
+  btnNext.addEventListener("click", ()=>{
+    if(!solved) return;
+    if(idx < WORDS.length - 1){
+      idx++;
+      render();
+    }else{
+      // Ende -> wieder von vorn
+      idx = 0;
+      render();
+    }
+  });
+
+  render();
+</script>
+</body>
+</html>
