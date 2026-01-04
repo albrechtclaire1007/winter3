@@ -158,30 +158,27 @@
       </button>
     </div>
   </div>
-
 <script>
-  // Bilder aus deiner Liste
   const WORDS = [
-    { key:"kakao", word:"kakao", img:"https://i.postimg.cc/K3GhpZYK/kakao.png" },
-    { key:"kamin", word:"kamin", img:"https://i.postimg.cc/CnhprFK8/kamin.png" },
-    { key:"berge", word:"berge", img:"https://i.postimg.cc/CBHV4ZwK/berge.png" },
-    { key:"tanne", word:"tanne", img:"https://i.postimg.cc/qgwThCmX/tanne.png" },
-    { key:"muetze", word:"mütze", img:"https://i.postimg.cc/3WYhxZFf/muetze.png" },
-    { key:"ski", word:"ski", img:"https://i.postimg.cc/Cd7gBfvd/ski.png" },
-    { key:"kerze", word:"kerze", img:"https://i.postimg.cc/vxYw2Qmt/kerze.png" },
-    { key:"vogel", word:"vogel", img:"https://i.postimg.cc/JtxLDBTq/vogel.png" }
+    { key:"kakao", word:"Der Kakao", img:"https://i.postimg.cc/K3GhpZYK/kakao.png" },
+    { key:"kamin", word:"Der Kamin", img:"https://i.postimg.cc/CnhprFK8/kamin.png" },
+    { key:"berge", word:"Die Berge", img:"https://i.postimg.cc/CBHV4ZwK/berge.png" },
+    { key:"tanne", word:"Die Tanne", img:"https://i.postimg.cc/qgwThCmX/tanne.png" },
+    { key:"muetze", word:"Die Mütze", img:"https://i.postimg.cc/3WYhxZFf/muetze.png" },
+    { key:"ski",   word:"Die Ski",   img:"https://i.postimg.cc/Cd7gBfvd/ski.png" },
+    { key:"kerze", word:"Die Kerze", img:"https://i.postimg.cc/vxYw2Qmt/kerze.png" },
+    { key:"vogel", word:"Der Vogel", img:"https://i.postimg.cc/JtxLDBTq/vogel.png" }
   ];
 
-  // 2 Ablenker pro Wort (ähnlich, aber falsch)
   const DISTRACTORS = {
-    kakao: ["kakau", "kakeo"],
-    kamin: ["kamen", "kaminh"],
-    berge: ["berge", "bergei"],     // sehr nah -> genau hinschauen
-    tanne: ["tonne", "tannee"],
-    muetze: ["mutze", "münze"],
-    ski:   ["sei", "sik"],
-    kerze: ["kerzen", "kerse"],
-    vogel: ["vögel", "vogal"]
+    kakao: ["Der Kakau", "Der Kakeo"],
+    kamin: ["Der Kamen", "Der Kaminh"],
+    berge: ["Die Berga", "Die Bergei"],
+    tanne: ["Die Tonne", "Die Tannee"],
+    muetze:["Die Mutze", "Die Münze"],
+    ski:   ["Der Ski", "Die Skei"],
+    kerze: ["Die Kerzen", "Die Kerse"],
+    vogel: ["Der Vögel", "Der Vogal"]
   };
 
   const imgEl = document.getElementById("img");
@@ -219,8 +216,6 @@
 
       b.onclick = ()=>{
         if(solved) return;
-
-        // reset styles
         [...optsEl.querySelectorAll(".opt")].forEach(x=>x.classList.remove("good","bad"));
 
         if(text === item.word){
@@ -239,24 +234,15 @@
     btnPrev.disabled = (idx === 0);
   }
 
-  btnPrev.addEventListener("click", ()=>{
-    if(idx > 0){
-      idx--;
-      render();
-    }
-  });
+  btnPrev.onclick = ()=>{
+    if(idx > 0){ idx--; render(); }
+  };
 
-  btnNext.addEventListener("click", ()=>{
+  btnNext.onclick = ()=>{
     if(!solved) return;
-    if(idx < WORDS.length - 1){
-      idx++;
-      render();
-    }else{
-      // Ende -> wieder von vorn
-      idx = 0;
-      render();
-    }
-  });
+    idx = (idx < WORDS.length - 1) ? idx + 1 : 0;
+    render();
+  };
 
   render();
 </script>
